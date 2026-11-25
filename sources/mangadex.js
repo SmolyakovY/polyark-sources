@@ -35,18 +35,27 @@ const source = {
   },
 
   async listChapters(mangaId) {
+    const params = new URLSearchParams()
+    params.set("limit", "100")
+    params.append("translatedLanguage[]", "en")
+    params.append("translatedLanguage[]", "ru")
+    params.set("includeExternalUrl", "0")
+    params.set("order[chapter]", "asc")
     const url =
       "https://api.mangadex.org/manga/" +
       encodeURIComponent(String(mangaId)) +
-      "/feed?limit=100&translatedLanguage[]=en&translatedLanguage[]=ru&order[chapter]=asc"
+      "/feed?" +
+      params.toString()
     const data = await readJson(url)
-    return (data.data ?? []).map((chapter) => ({
-      id: chapter.id,
-      mangaId: String(mangaId),
-      title: chapter.attributes?.title || undefined,
-      number: chapter.attributes?.chapter || undefined,
-      lang: chapter.attributes?.translatedLanguage,
-    }))
+    return (data.data ?? [])
+      .filter((chapter) => (chapter.attributes?.pages ?? 0) > 0 && !chapter.attributes?.externalUrl)
+      .map((chapter) => ({
+        id: chapter.id,
+        mangaId: String(mangaId),
+        title: chapter.attributes?.title || undefined,
+        number: chapter.attributes?.chapter || undefined,
+        lang: chapter.attributes?.translatedLanguage,
+      }))
   },
 
   async listPages(chapterId) {
