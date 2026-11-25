@@ -4,10 +4,17 @@
     {
       "id": "mangadex",
       "name": "MangaDex",
-      "langs": ["en", "ru"],
-      "hosts": ["api.mangadex.org", "uploads.mangadex.org", ".mangadex.network"],
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "hosts": [
+        "api.mangadex.org",
+        "uploads.mangadex.org",
+        ".mangadex.network"
+      ],
       "file": "sources/mangadex.js",
-      "sha256": "62b4a1ac08d3e4b2377474e484ac61e190f8709cad75e91d676418b56d6e934d"
+      "sha256": "31f642ab73ccdc6aa9e929a8e553890ede3d8a2dd38e061136163bc58e441747"
     }
   ]
 }
