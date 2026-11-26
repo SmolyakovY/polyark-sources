@@ -34,6 +34,40 @@ const source = {
     return mapManga(data)
   },
 
+  async getMangaDetails(mangaId) {
+    const params = new URLSearchParams()
+    params.append("includes[]", "cover_art")
+    const data = await readJson(
+      "https://api.mangadex.org/manga/" + encodeURIComponent(String(mangaId)) + "?" + params.toString(),
+    )
+    const manga = data.data
+    if (!manga?.id) return null
+    const attrs = manga.attributes ?? {}
+    const title = pickTitle(attrs.title) || manga.id
+    const seen = new Set([title.toLowerCase()])
+    const altTitles = []
+    for (const row of attrs.altTitles ?? []) {
+      if (!row || typeof row !== "object") continue
+      for (const value of Object.values(row)) {
+        const text = String(value ?? "").trim()
+        if (!text || seen.has(text.toLowerCase())) continue
+        seen.add(text.toLowerCase())
+        altTitles.push(text)
+      }
+    }
+    const description = pickTitle(attrs.description)
+    return {
+      title,
+      altTitles,
+      description: description || undefined,
+      tags: (attrs.tags ?? []).map((tag) => tag.attributes?.name?.en).filter(Boolean),
+      year: typeof attrs.year === "number" ? attrs.year : undefined,
+      status: attrs.status || undefined,
+      contentRating: attrs.contentRating || undefined,
+      coverUrl: coverUrl(manga, "512"),
+    }
+  },
+
   async listChapters(mangaId) {
     const params = new URLSearchParams()
     params.set("limit", "100")
@@ -94,11 +128,11 @@ function mapManga(data) {
   }))
 }
 
-function coverUrl(manga) {
+function coverUrl(manga, size = "256") {
   const cover = (manga.relationships ?? []).find((item) => item.type === "cover_art")
   const file = cover?.attributes?.fileName
   if (!manga.id || !file) return undefined
-  return `https://uploads.mangadex.org/covers/${manga.id}/${file}.256.jpg`
+  return `https://uploads.mangadex.org/covers/${manga.id}/${file}.${size}.jpg`
 }
 
 function pickTitle(titles) {
