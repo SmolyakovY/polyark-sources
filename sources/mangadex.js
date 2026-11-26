@@ -54,7 +54,9 @@ const source = {
         mangaId: String(mangaId),
         title: chapter.attributes?.title || undefined,
         number: chapter.attributes?.chapter || undefined,
+        volume: chapter.attributes?.volume || undefined,
         lang: chapter.attributes?.translatedLanguage,
+        publishedAt: chapter.attributes?.publishAt || undefined,
       }))
   },
 
