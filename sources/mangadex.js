@@ -21,17 +21,17 @@ const source = {
       if (selected.tagMode === "all") params.set("includedTagsMode", "AND")
     }
     const data = await readJson("https://api.mangadex.org/manga?" + params.toString())
-    return (data.data ?? []).map((manga) => ({
-      id: manga.id,
-      title: pickTitle(manga.attributes?.title) || manga.id,
-      lang: manga.attributes?.originalLanguage,
-      coverUrl: coverUrl(manga),
-      year: manga.attributes?.year || undefined,
-      status: manga.attributes?.status || undefined,
-      tags: (manga.attributes?.tags ?? [])
-        .map((tag) => tag.attributes?.name?.en)
-        .filter(Boolean),
-    }))
+    return mapManga(data)
+  },
+
+  async listPopular(offset) {
+    const params = new URLSearchParams()
+    params.set("limit", "20")
+    params.set("offset", String(Math.max(0, Math.floor(Number(offset) || 0))))
+    params.append("includes[]", "cover_art")
+    params.set("order[followedCount]", "desc")
+    const data = await readJson("https://api.mangadex.org/manga?" + params.toString())
+    return mapManga(data)
   },
 
   async listChapters(mangaId) {
@@ -80,6 +80,18 @@ async function readJson(url) {
     throw new Error("MangaDex " + response.status)
   }
   return response.json()
+}
+
+function mapManga(data) {
+  return (data.data ?? []).map((manga) => ({
+    id: manga.id,
+    title: pickTitle(manga.attributes?.title) || manga.id,
+    lang: manga.attributes?.originalLanguage,
+    coverUrl: coverUrl(manga),
+    year: manga.attributes?.year || undefined,
+    status: manga.attributes?.status || undefined,
+    tags: (manga.attributes?.tags ?? []).map((tag) => tag.attributes?.name?.en).filter(Boolean),
+  }))
 }
 
 function coverUrl(manga) {
